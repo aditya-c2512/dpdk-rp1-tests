@@ -7,7 +7,7 @@
 #include "packet.h"
 #include "timer.h"
 #include "logging.h"
-#include "tcp_client.h"
+#include "tcp_transport.h"
 
 #include <stdlib.h>
 #include <string.h>
