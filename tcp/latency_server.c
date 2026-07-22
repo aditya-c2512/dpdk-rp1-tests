@@ -7,7 +7,7 @@
 #include "latency.h"
 
 #include "tcp_server.h"
-#include "tcp_client.h"
+#include "tcp_transport.h"
 
 #include "logging.h"
 

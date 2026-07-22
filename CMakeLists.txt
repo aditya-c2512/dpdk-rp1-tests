@@ -44,6 +44,7 @@ add_library(tcp STATIC
         tcp/tcp_server.c
         tcp/throughput.c
         tcp/latency.c
+        tcp/tcp_transport.c
 )
 
 
