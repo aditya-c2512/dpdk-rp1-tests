@@ -16,19 +16,23 @@
 #include <unistd.h>
 
 #include <inttypes.h>
+#include <string.h>
 
 int run_latency_server(
         int fd)
 {
-    latency_packet packet;
+    latency_header header;
 
 
     while(1)
     {
+        /*
+         * First receive the fixed-size header
+         */
         if(tcp_recv_all(
                 fd,
-                &packet,
-                sizeof(packet)) < 0)
+                &header,
+                sizeof(header)) < 0)
         {
             log_info(
                 "Client disconnected");
@@ -38,24 +42,95 @@ int run_latency_server(
 
 
 
-        if(packet.magic != LATENCY_MAGIC)
+        if(header.magic != LATENCY_MAGIC)
         {
             log_error(
                 "Invalid packet magic 0x%x",
-                packet.magic);
+                header.magic);
 
             continue;
         }
 
 
 
-        if(tcp_send_all(
-                fd,
-                &packet,
-                sizeof(packet)) < 0)
+        uint32_t packet_size =
+            sizeof(latency_header)
+            +
+            header.payload_size;
+
+
+
+        /*
+         * Allocate complete packet
+         *
+         * +----------------+
+         * | latency_header |
+         * +----------------+
+         * | payload        |
+         * +----------------+
+         */
+        char *buffer =
+            malloc(packet_size);
+
+
+
+        if(!buffer)
         {
+            log_error(
+                "Failed to allocate packet");
+
             break;
         }
+
+
+
+        /*
+         * Copy already received header
+         */
+        memcpy(
+            buffer,
+            &header,
+            sizeof(header));
+
+
+
+        /*
+         * Receive payload
+         */
+        if(header.payload_size > 0)
+        {
+            if(tcp_recv_all(
+                    fd,
+                    buffer + sizeof(header),
+                    header.payload_size) < 0)
+            {
+                free(buffer);
+
+                log_info(
+                    "Client disconnected");
+
+                break;
+            }
+        }
+
+
+
+        /*
+         * Echo complete packet back
+         */
+        if(tcp_send_all(
+                fd,
+                buffer,
+                packet_size) < 0)
+        {
+            free(buffer);
+
+            break;
+        }
+
+
+
+        free(buffer);
     }
 
 

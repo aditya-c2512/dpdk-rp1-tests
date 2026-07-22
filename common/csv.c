@@ -173,6 +173,7 @@ uint64_t latency_percentile(
 int latency_csv_append(
         const char *filename,
         const char *test_type,
+        uint32_t packet_size,
         latency_stats *stats)
 {
     FILE *fp =
@@ -193,7 +194,7 @@ int latency_csv_append(
     {
         fprintf(
             fp,
-            "timestamp,test_type,samples,p50,p90,p95,p99,p999,max\n");
+            "timestamp,test_type,packet_size,samples,p50,p90,p95,p99,p999,max\n");
     }
 
 
@@ -220,9 +221,10 @@ int latency_csv_append(
 
     fprintf(
         fp,
-        "%s,%s,%lu,%lu,%lu,%lu,%lu,%lu,%lu\n",
+        "%s,%s,%u,%lu,%lu,%lu,%lu,%lu,%lu,%lu\n",
         timestamp,
         test_type,
+        packet_size,
         stats->samples,
 
         latency_percentile(stats,50),

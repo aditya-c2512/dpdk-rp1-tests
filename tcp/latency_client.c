@@ -13,24 +13,46 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <inttypes.h>
 
 
 int main(int argc,char **argv)
 {
-    if(argc < 4)
+    if(argc < 5)
     {
         printf(
-        "usage: %s <ip> <port> <samples>\n",
+        "usage: %s <ip> <port> <samples> <packet_size>\n",
         argv[0]);
 
         return 1;
     }
 
 
+
+    const char *ip =
+        argv[1];
+
+
+    uint16_t port =
+        atoi(argv[2]);
+
+
+    uint64_t samples =
+        strtoull(
+            argv[3],
+            NULL,
+            10);
+
+
+    uint32_t packet_size =
+        atoi(argv[4]);
+
+
+
     int fd =
         tcp_client_connect(
-            argv[1],
-            atoi(argv[2]));
+            ip,
+            port);
 
 
 
@@ -53,7 +75,8 @@ int main(int argc,char **argv)
 
     run_latency_client(
         fd,
-        strtoull(argv[3],NULL,10),
+        samples,
+        packet_size,
         &stats);
 
 
@@ -61,28 +84,63 @@ int main(int argc,char **argv)
     printf("\nLatency Results\n");
     printf("-----------------------\n");
 
+
     printf(
-        "Samples : %lu\n",
+        "Packet size : %u bytes\n",
+        packet_size);
+
+
+    printf(
+        "Samples     : %" PRIu64 "\n",
         stats.samples);
 
+
+
     printf(
-        "Min     : %lu ns\n",
+        "Min         : %" PRIu64 " ns\n",
         stats.min_ns);
 
-    printf(
-        "Average : %.2f ns\n",
-        stats.avg_ns);
+
 
     printf(
-        "Max     : %lu ns\n",
+        "Average     : %.2f ns\n",
+        stats.avg_ns);
+
+
+
+    printf(
+        "Max         : %" PRIu64 " ns\n",
         stats.max_ns);
+
+
+
+    printf(
+        "p50         : %" PRIu64 " ns\n",
+        latency_percentile(
+            &stats,
+            50));
+
+
+    printf(
+        "p99         : %" PRIu64 " ns\n",
+        latency_percentile(
+            &stats,
+            99));
+
 
     latency_csv_append(
         "../results/latency.csv",
         "TCP",
+        packet_size,
         &stats);
 
+
+
+    free(stats.samples_ns);
+
+
     close(fd);
+
 
     return 0;
 }

@@ -49,22 +49,67 @@ void latency_sort(
 int run_latency_client(
         int fd,
         uint64_t samples,
+        uint32_t packet_size,
         latency_stats *stats)
 {
-    latency_packet packet;
+    if(packet_size < sizeof(latency_header))
+    {
+        log_error(
+            "Packet size %u smaller than latency header %lu",
+            packet_size,
+            sizeof(latency_header));
+
+        return -1;
+    }
+
+
+    uint32_t payload_size =
+        packet_size - sizeof(latency_header);
+
+
+
+    /*
+     * Allocate latency packet
+     *
+     * Layout:
+     *
+     * +----------------+
+     * | latency_header |
+     * +----------------+
+     * | payload        |
+     * +----------------+
+     */
+    char *buffer =
+        malloc(packet_size);
+
+
+    if(!buffer)
+    {
+        log_error(
+            "Failed to allocate packet");
+
+        return -1;
+    }
 
 
     memset(
-        &packet,
+        buffer,
         0,
-        sizeof(packet));
+        packet_size);
+
+
+
+    latency_header *packet =
+        (latency_header *)buffer;
+
 
 
     stats->samples_ns =
-    malloc(
-        sizeof(uint64_t)
-        *
-        samples);
+        malloc(
+            sizeof(uint64_t)
+            *
+            samples);
+
 
 
     if(!stats->samples_ns)
@@ -72,56 +117,83 @@ int run_latency_client(
         log_error(
             "Failed to allocate latency histogram");
 
+        free(buffer);
+
         return -1;
     }
 
 
+
     stats->min_ns = UINT64_MAX;
+    stats->max_ns = 0;
+    stats->total_ns = 0;
+    stats->samples = 0;
 
 
 
     log_info(
-        "Starting latency test: samples=%" PRIu64,
-        samples);
+        "Starting latency test: samples=%" PRIu64
+        " packet_size=%u payload=%u",
+        samples,
+        packet_size,
+        payload_size);
 
 
 
     for(uint64_t i=0;i<samples;i++)
     {
-        packet.magic =
+
+        /*
+         * Populate header
+         */
+        packet->magic =
             LATENCY_MAGIC;
 
 
-        packet.sequence =
+        packet->sequence =
             i;
 
 
-        packet.timestamp_ns =
+        packet->timestamp_ns =
             timer_now_ns();
 
 
+        packet->payload_size =
+            payload_size;
 
+
+
+        /*
+         * Send complete packet
+         */
         if(tcp_send_all(
                 fd,
-                &packet,
-                sizeof(packet)) < 0)
+                buffer,
+                packet_size) < 0)
         {
             log_error(
                 "send failed at sample %" PRIu64,
                 i);
+
+            free(buffer);
 
             return -1;
         }
 
 
 
+        /*
+         * Receive echo
+         */
         if(tcp_recv_all(
                 fd,
-                &packet,
-                sizeof(packet)) < 0)
+                buffer,
+                packet_size) < 0)
         {
             log_error(
                 "receive failed");
+
+            free(buffer);
 
             return -1;
         }
@@ -133,8 +205,12 @@ int run_latency_client(
 
 
 
+        /*
+         * timestamp_ns was echoed back
+         */
         uint64_t latency =
-            now - packet.timestamp_ns;
+            now -
+            packet->timestamp_ns;
 
 
 
@@ -142,11 +218,16 @@ int run_latency_client(
             stats->min_ns = latency;
 
 
+
         if(latency > stats->max_ns)
             stats->max_ns = latency;
 
 
-        stats->samples_ns[stats->samples] = latency;
+
+        stats->samples_ns[
+            stats->samples
+        ] = latency;
+
 
 
         stats->samples++;
@@ -169,11 +250,17 @@ int run_latency_client(
 
 
     stats->avg_ns =
-    (double)stats->total_ns /
-    stats->samples;
+        (double)stats->total_ns /
+        stats->samples;
+
 
 
     latency_sort(stats);
+
+
+
+    free(buffer);
+
 
     return 0;
 }

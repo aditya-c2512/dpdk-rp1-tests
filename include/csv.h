@@ -20,6 +20,7 @@ int throughput_csv_append(
 int latency_csv_append(
         const char *filename,
         const char *test_type,
+        uint32_t packet_size,
         latency_stats *stats);
 
 #endif //DPDK_RP1_TESTS_CSV_H

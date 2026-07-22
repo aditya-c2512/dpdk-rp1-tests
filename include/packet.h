@@ -24,6 +24,8 @@ typedef struct
 
     uint64_t timestamp_ns;
 
-} latency_packet;
+    uint32_t payload_size;
+
+} latency_header;
 
 #endif //DPDK_RP1_TESTS_PACKET_H

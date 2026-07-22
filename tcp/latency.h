@@ -18,6 +18,7 @@
 int run_latency_client(
         int fd,
         uint64_t samples,
+        uint32_t payload_size,
         latency_stats *stats);
 
 
