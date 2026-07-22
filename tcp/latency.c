@@ -44,23 +44,7 @@ void latency_sort(
 
 
 
-uint64_t latency_percentile(
-        latency_stats *stats,
-        double percentile)
-{
-    if(stats->samples == 0)
-        return 0;
 
-
-    uint64_t index =
-        (uint64_t)
-        ((percentile / 100.0)
-        *
-        (stats->samples - 1));
-
-
-    return stats->samples_ns[index];
-}
 
 int run_latency_client(
         int fd,

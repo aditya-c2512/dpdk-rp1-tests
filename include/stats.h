@@ -47,4 +47,8 @@ typedef struct
 
 void stats_reset(benchmark_stats *stats);
 
+uint64_t latency_percentile(
+        latency_stats *stats,
+        double percentile);
+
 #endif //DPDK_RP1_TESTS_STATS_H
