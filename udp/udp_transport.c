@@ -131,3 +131,8 @@ ssize_t udp_recv(
     return ret;
 }
 
+void udp_close(
+        int fd)
+{
+    close(fd);
+}
