@@ -103,13 +103,15 @@ ssize_t udp_send(
         size_t len)
 {
     ssize_t ret =
-        send(fd,
-             buf,
-             len,
-             0);
+        send(fd, buf, len, 0);
 
     if(ret < 0)
-        log_error("send()");
+    {
+        log_error(
+            "send failed errno=%d (%s)",
+            errno,
+            strerror(errno));
+    }
 
     return ret;
 }
