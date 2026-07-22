@@ -204,8 +204,6 @@ elif [ "$MODE" == "rx" ]; then
             echo
             echo "Completed packet size ${SIZE}"
 
-            sleep $WAIT_TIME
-
         done
 
 
