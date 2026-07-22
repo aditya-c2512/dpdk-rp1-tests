@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <time.h>
 
-int csv_write(const char *filename, const benchmark_stats *stats)
+int throughput_csv_write(const char *filename, const benchmark_stats *stats)
 {
     FILE *fp = fopen(filename, "w");
     if (!fp)
@@ -61,7 +61,7 @@ int csv_write(const char *filename, const benchmark_stats *stats)
     return 0;
 }
 
-int csv_append(
+int throughput_csv_append(
     const char *filename,
     const char *test_type,
     uint32_t packet_size,
@@ -158,6 +158,82 @@ int csv_append(
 
         stats->throughput_mbps,
         stats->packets_per_second);
+
+    fclose(fp);
+
+    return 0;
+}
+
+uint64_t latency_percentile(
+        latency_stats *stats,
+        double percentile);
+
+
+
+int latency_csv_append(
+        const char *filename,
+        const char *test_type,
+        latency_stats *stats)
+{
+    FILE *fp =
+        fopen(
+            filename,
+            "a");
+
+
+    if(!fp)
+        return -1;
+
+
+
+    static int header_written = 0;
+
+
+    if(ftell(fp)==0)
+    {
+        fprintf(
+            fp,
+            "timestamp,test_type,samples,p50,p90,p95,p99,p999,max\n");
+    }
+
+
+
+    time_t now =
+        time(NULL);
+
+
+    struct tm *tm =
+        localtime(&now);
+
+
+
+    char timestamp[64];
+
+
+    strftime(
+        timestamp,
+        sizeof(timestamp),
+        "%Y-%m-%d %H:%M:%S",
+        tm);
+
+
+
+    fprintf(
+        fp,
+        "%s,%s,%lu,%lu,%lu,%lu,%lu,%lu,%lu\n",
+        timestamp,
+        test_type,
+        stats->samples,
+
+        latency_percentile(stats,50),
+        latency_percentile(stats,90),
+        latency_percentile(stats,95),
+        latency_percentile(stats,99),
+        latency_percentile(stats,99.9),
+
+        stats->max_ns
+    );
+
 
     fclose(fp);
 

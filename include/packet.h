@@ -16,4 +16,14 @@ typedef struct
     uint32_t magic;
 } benchmark_header;
 
+typedef struct
+{
+    uint32_t magic;
+
+    uint64_t sequence;
+
+    uint64_t timestamp_ns;
+
+} latency_packet;
+
 #endif //DPDK_RP1_TESTS_PACKET_H

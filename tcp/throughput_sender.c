@@ -68,7 +68,7 @@ int main(int argc, char **argv)
     /*
      * Append results
      */
-    csv_append(
+    throughput_csv_append(
         "../results/tx_throughput.csv",
         "TCP",
         payload_size,

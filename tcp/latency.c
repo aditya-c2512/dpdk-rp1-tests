@@ -3,17 +3,64 @@
 //
 
 #include "latency.h"
-
+#include "packet.h"
 #include "timer.h"
 #include "logging.h"
 
 #include "tcp_transport.h"
 
-
+#include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
 
+static int compare_uint64(
+        const void *a,
+        const void *b)
+{
+    uint64_t x = *(uint64_t *)a;
+    uint64_t y = *(uint64_t *)b;
 
+
+    if(x < y)
+        return -1;
+
+    if(x > y)
+        return 1;
+
+    return 0;
+}
+
+
+
+void latency_sort(
+        latency_stats *stats)
+{
+    qsort(
+        stats->samples_ns,
+        stats->samples,
+        sizeof(uint64_t),
+        compare_uint64);
+}
+
+
+
+uint64_t latency_percentile(
+        latency_stats *stats,
+        double percentile)
+{
+    if(stats->samples == 0)
+        return 0;
+
+
+    uint64_t index =
+        (uint64_t)
+        ((percentile / 100.0)
+        *
+        (stats->samples - 1));
+
+
+    return stats->samples_ns[index];
+}
 
 int run_latency_client(
         int fd,
@@ -27,6 +74,22 @@ int run_latency_client(
         &packet,
         0,
         sizeof(packet));
+
+
+    stats->samples_ns =
+    malloc(
+        sizeof(uint64_t)
+        *
+        samples);
+
+
+    if(!stats->samples_ns)
+    {
+        log_error(
+            "Failed to allocate latency histogram");
+
+        return -1;
+    }
 
 
     stats->min_ns = UINT64_MAX;
@@ -99,9 +162,13 @@ int run_latency_client(
             stats->max_ns = latency;
 
 
-        stats->total_ns += latency;
+        stats->samples_ns[stats->samples] = latency;
+
 
         stats->samples++;
+
+
+        stats->total_ns += latency;
 
 
 
@@ -118,10 +185,11 @@ int run_latency_client(
 
 
     stats->avg_ns =
-        (double)stats->total_ns /
-        stats->samples;
+    (double)stats->total_ns /
+    stats->samples;
 
 
+    latency_sort(stats);
 
     return 0;
 }

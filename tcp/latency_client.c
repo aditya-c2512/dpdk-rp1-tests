@@ -77,7 +77,10 @@ int main(int argc,char **argv)
         "Max     : %lu ns\n",
         stats.max_ns);
 
-
+    latency_csv_append(
+        "../results/latency.csv",
+        "TCP",
+        &stats);
 
     close(fd);
 

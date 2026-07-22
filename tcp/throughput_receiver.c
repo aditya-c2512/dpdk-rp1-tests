@@ -79,7 +79,7 @@ int main(int argc, char **argv)
 
 
 
-    csv_append(
+    throughput_csv_append(
         "../results/rx_throughput.csv",
         "TCP",
         payload_size,

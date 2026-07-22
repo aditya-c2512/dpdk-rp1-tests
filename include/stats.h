@@ -31,6 +31,20 @@ typedef struct
 
 } benchmark_stats;
 
+typedef struct
+{
+    uint64_t samples;
+
+    uint64_t *samples_ns;
+
+    uint64_t min_ns;
+    uint64_t max_ns;
+
+    uint64_t total_ns;
+    double avg_ns;
+
+} latency_stats;
+
 void stats_reset(benchmark_stats *stats);
 
 #endif //DPDK_RP1_TESTS_STATS_H
