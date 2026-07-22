@@ -5,13 +5,16 @@ set -e
 
 WAIT_TIME=5
 
+PACKET_SIZES=(64 128 256 512 1024 1500)
+
 
 usage()
 {
     echo "Usage:"
     echo
     echo "TX:"
-    echo "  $0 <runs> tx <ip> <port> <samples>"
+    echo "  $0 <runs> tx <ip> <port> <samples> <packet_size>"
+    echo "  $0 <runs> tx <ip> <port> <samples> sweep"
     echo
     echo "RX:"
     echo "  $0 <runs> rx <port>"
@@ -37,23 +40,18 @@ SERVER_BIN="${SCRIPT_DIR}/tcp_latency_server"
 
 
 
-if [ "$MODE" == "tx" ]; then
-
-    if [ $# -ne 5 ]; then
-        usage
-    fi
-
-
-    IP=$3
-    PORT=$4
-    SAMPLES=$5
+run_latency_tx()
+{
+    IP=$1
+    PORT=$2
+    SAMPLES=$3
+    PACKET_SIZE=$4
 
 
     echo "================================"
     echo "TCP Latency Client"
     echo "================================"
-    echo "Runs: $RUNS"
-    echo "Destination: $IP:$PORT"
+    echo "Packet size: $PACKET_SIZE bytes"
     echo "Samples/run: $SAMPLES"
     echo
 
@@ -64,6 +62,7 @@ if [ "$MODE" == "tx" ]; then
 
         echo "================================"
         echo "Latency TX Run $i/$RUNS"
+        echo "Packet size: $PACKET_SIZE"
         echo "================================"
 
 
@@ -71,7 +70,8 @@ if [ "$MODE" == "tx" ]; then
         $CLIENT_BIN \
             $IP \
             $PORT \
-            $SAMPLES
+            $SAMPLES \
+            $PACKET_SIZE
 
 
 
@@ -86,6 +86,76 @@ if [ "$MODE" == "tx" ]; then
         fi
 
     done
+}
+
+
+
+if [ "$MODE" == "tx" ]; then
+
+
+    if [ $# -ne 6 ]; then
+        usage
+    fi
+
+
+    IP=$3
+    PORT=$4
+    SAMPLES=$5
+    SIZE=$6
+
+
+
+    echo "================================"
+    echo "TCP Latency Benchmark"
+    echo "================================"
+    echo "Runs: $RUNS"
+    echo "Destination: $IP:$PORT"
+    echo "Samples/run: $SAMPLES"
+    echo
+
+
+
+    if [ "$SIZE" == "sweep" ]; then
+
+
+        echo "Starting packet size sweep"
+
+
+        for PACKET_SIZE in "${PACKET_SIZES[@]}"
+        do
+
+            echo
+            echo "################################"
+            echo "Testing packet size ${PACKET_SIZE}"
+            echo "################################"
+
+
+            run_latency_tx \
+                $IP \
+                $PORT \
+                $SAMPLES \
+                $PACKET_SIZE
+
+
+            echo
+            echo "Completed packet size ${PACKET_SIZE}"
+
+
+            sleep $WAIT_TIME
+
+        done
+
+
+    else
+
+
+        run_latency_tx \
+            $IP \
+            $PORT \
+            $SAMPLES \
+            $SIZE
+
+    fi
 
 
 
