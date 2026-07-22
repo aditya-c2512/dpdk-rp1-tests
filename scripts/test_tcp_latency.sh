@@ -32,8 +32,8 @@ MODE=$2
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 
-CLIENT_BIN="${SCRIPT_DIR}/latency_client"
-SERVER_BIN="${SCRIPT_DIR}/latency_server"
+CLIENT_BIN="${SCRIPT_DIR}/tcp_latency_client"
+SERVER_BIN="${SCRIPT_DIR}/tcp_latency_server"
 
 
 
