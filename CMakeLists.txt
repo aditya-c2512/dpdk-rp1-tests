@@ -21,6 +21,7 @@ add_library(common STATIC
         common/csv.c
         common/affinity.c
         common/logging.c
+        tcp/latency.h
 )
 
 
@@ -42,6 +43,7 @@ add_library(tcp STATIC
         tcp/tcp_client.c
         tcp/tcp_server.c
         tcp/throughput.c
+        tcp/latency.c
 )
 
 
@@ -58,32 +60,32 @@ target_link_libraries(tcp
 
 
 
-add_executable(tcp_sender
-        tcp/sender.c
+add_executable(tcp_throughput_sender
+        tcp/throughput_sender.c
 )
 
-target_link_libraries(tcp_sender tcp)
+target_link_libraries(tcp_throughput_sender tcp)
 
 
 
-add_executable(tcp_receiver
-        tcp/receiver.c
+add_executable(tcp_throughput_receiver
+        tcp/throughput_receiver.c
 )
 
-target_link_libraries(tcp_receiver tcp)
+target_link_libraries(tcp_throughput_receiver tcp)
 
 
 
-add_executable(latency_client
+add_executable(tcp_latency_client
         tcp/latency_client.c
 )
 
-target_link_libraries(latency_client tcp)
+target_link_libraries(tcp_latency_client tcp)
 
 
 
-add_executable(latency_server
+add_executable(tcp_latency_server
         tcp/latency_server.c
 )
 
-target_link_libraries(latency_server tcp)
+target_link_libraries(tcp_latency_server tcp)
