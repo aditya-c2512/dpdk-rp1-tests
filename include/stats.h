@@ -12,6 +12,7 @@ typedef struct
 {
     uint64_t packets_sent;
     uint64_t packets_received;
+    uint64_t drops;
 
     uint64_t bytes_sent;
     uint64_t bytes_received;

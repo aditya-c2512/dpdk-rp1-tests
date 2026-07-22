@@ -126,31 +126,38 @@ int run_udp_receiver_benchmark(
         sizeof(benchmark_header) +
         payload_size;
 
+
     char *buffer =
         malloc(size);
+
 
     if(!buffer)
         return -1;
 
+
     benchmark_header *hdr =
         (benchmark_header *)buffer;
 
+
+
     uint64_t expected_seq = 0;
 
-    uint64_t start =
-        timer_now_ns();
+    uint64_t start = 0;
+    uint64_t end = 0;
 
-    uint64_t end =
-        start +
-        duration * 1000000000ULL;
+    uint64_t last_log = 0;
 
-    uint64_t last_log = start;
+    int started = 0;
+
+
 
     log_info(
         "Starting UDP receiver: packet=%u",
         size);
 
-    while(timer_now_ns() < end)
+
+
+    while(1)
     {
         ssize_t ret =
             udp_recv(
@@ -158,11 +165,13 @@ int run_udp_receiver_benchmark(
                 buffer,
                 size);
 
+
         if(ret < 0)
         {
             stats->errors++;
             continue;
         }
+
 
         if((uint32_t)ret != size)
         {
@@ -170,69 +179,133 @@ int run_udp_receiver_benchmark(
             continue;
         }
 
+
         if(hdr->magic != MAGIC)
         {
             stats->errors++;
             continue;
         }
 
+
+
+        /*
+         * First valid packet starts measurement
+         */
+        if(!started)
+        {
+            start =
+                timer_now_ns();
+
+            end =
+                start +
+                duration * 1000000000ULL;
+
+            last_log = start;
+
+            started = 1;
+
+
+            log_info(
+                "Measurement started seq=%" PRIu64,
+                hdr->sequence);
+        }
+
+
+
         /*
          * Sequence tracking
          */
-        if(hdr->sequence != expected_seq)
+        if(stats->packets_received == 0)
         {
-            /*
-             * Placeholder:
-             * packet loss / out-of-order accounting
-             * can be added here later.
-             */
             expected_seq =
                 hdr->sequence + 1;
         }
         else
         {
-            expected_seq++;
+            if(hdr->sequence > expected_seq)
+            {
+                stats->drops +=
+                    hdr->sequence - expected_seq;
+            }
+
+            expected_seq =
+                hdr->sequence + 1;
         }
 
+
+
         stats->packets_received++;
+
         stats->bytes_received += ret;
+
         stats->recv_calls++;
+
+
 
         uint64_t now =
             timer_now_ns();
+
+
 
         if(now - last_log >= 1000000000ULL)
         {
             double elapsed =
                 (now - start) / 1e9;
 
+
             log_info(
                 "RX packets=%" PRIu64
                 " bytes=%" PRIu64
+                " drops=%" PRIu64
                 " rate=%.2f Mbps",
                 stats->packets_received,
                 stats->bytes_received,
-                (stats->bytes_received * 8.0) /
-                elapsed /
+                stats->drops,
+                (stats->bytes_received * 8.0)
+                /
+                elapsed
+                /
                 1000000.0);
+
 
             last_log = now;
         }
+
+
+
+        /*
+         * Measurement finished
+         */
+        if(started && now >= end)
+        {
+            break;
+        }
     }
+
+
 
     stats->runtime_ns =
         timer_now_ns() - start;
 
+
+
     stats->throughput_mbps =
-        (stats->bytes_received * 8.0) /
-        (stats->runtime_ns / 1e9) /
+        (stats->bytes_received * 8.0)
+        /
+        (stats->runtime_ns / 1e9)
+        /
         1000000.0;
+
+
 
     stats->packets_per_second =
         stats->packets_received /
         (stats->runtime_ns / 1e9);
 
+
+
     free(buffer);
+
 
     return 0;
 }
