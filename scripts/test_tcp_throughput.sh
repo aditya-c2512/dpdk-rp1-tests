@@ -106,12 +106,6 @@ run_rx()
 
         echo "Completed RX run $i/$RUNS"
 
-
-        if [ $i -lt $RUNS ]; then
-            echo "Waiting ${WAIT_TIME}s..."
-            sleep $WAIT_TIME
-        fi
-
     done
 }
 
