@@ -74,43 +74,45 @@ int main(int argc,char **argv)
     }
 
 
-
-    int server =
+    while (1) {
+        int server =
         tcp_server_listen(
             atoi(argv[1]));
 
 
 
-    if(server < 0)
-    {
-        log_error(
-            "Failed to listen");
+        if(server < 0)
+        {
+            log_error(
+                "Failed to listen");
 
-        return 1;
+            return 1;
+        }
+
+
+
+        log_info(
+            "Waiting for latency client");
+
+
+
+        int fd =
+            tcp_server_accept(server);
+
+
+
+        log_info(
+            "Client connected");
+
+
+        run_latency_server(fd);
+
+
+
+        close(fd);
+        close(server);
     }
 
-
-
-    log_info(
-        "Waiting for latency client");
-
-
-
-    int fd =
-        tcp_server_accept(server);
-
-
-
-    log_info(
-        "Client connected");
-
-
-    run_latency_server(fd);
-
-
-
-    close(fd);
-    close(server);
 
 
     return 0;
