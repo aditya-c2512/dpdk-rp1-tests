@@ -34,8 +34,8 @@ MODE=$2
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-TX_BIN="${SCRIPT_DIR}/tcp_sender"
-RX_BIN="${SCRIPT_DIR}/tcp_receiver"
+TX_BIN="${SCRIPT_DIR}/tcp_throughput_sender"
+RX_BIN="${SCRIPT_DIR}/tcp_throughput_receiver"
 
 
 
