@@ -10,4 +10,11 @@
 
 int csv_write(const char *filename, const benchmark_stats *stats);
 
+int csv_append(
+    const char *filename,
+    const char *test_type,
+    uint32_t packet_size,
+    uint32_t duration_seconds,
+    const benchmark_stats *stats);
+
 #endif //DPDK_RP1_TESTS_CSV_H
