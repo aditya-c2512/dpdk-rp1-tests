@@ -9,20 +9,20 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
 
     if(argc < 4)
     {
         printf(
-        "usage: %s <port> <size> <duration>\n",
-        argv[0]);
+            "usage: %s <port> <size> <duration>\n",
+            argv[0]);
 
         return 1;
     }
-
 
 
     int server =
@@ -30,9 +30,23 @@ int main(int argc,char **argv)
             atoi(argv[1]));
 
 
+    if(server < 0)
+    {
+        log_error("Failed to create server");
+        return 1;
+    }
+
+
 
     int fd =
         tcp_server_accept(server);
+
+
+    if(fd < 0)
+    {
+        log_error("Accept failed");
+        return 1;
+    }
 
 
 
@@ -42,10 +56,18 @@ int main(int argc,char **argv)
 
 
 
+    uint32_t payload_size =
+        atoi(argv[2]);
+
+    uint32_t duration =
+        atoi(argv[3]);
+
+
+
     run_receiver_benchmark(
         fd,
-        atoi(argv[2]),
-        atoi(argv[3]),
+        payload_size,
+        duration,
         &stats);
 
 
@@ -54,6 +76,19 @@ int main(int argc,char **argv)
         "RX %.2f Mbps %.2f pps\n",
         stats.throughput_mbps,
         stats.packets_per_second);
+
+
+
+    csv_append(
+        "../results/rx_throughput.csv",
+        "TCP",
+        payload_size,
+        duration,
+        &stats);
+
+
+    close(fd);
+    close(server);
 
 
     return 0;
