@@ -245,7 +245,13 @@ int run_udp_receiver_benchmark(
         uint64_t now =
             timer_now_ns();
 
-
+        /*
+        * Measurement finished
+        */
+        if(started && now >= end)
+        {
+            break;
+        }
 
         if(now - last_log >= 1000000000ULL)
         {
@@ -269,16 +275,6 @@ int run_udp_receiver_benchmark(
 
 
             last_log = now;
-        }
-
-
-
-        /*
-         * Measurement finished
-         */
-        if(started && now >= end)
-        {
-            break;
         }
     }
 

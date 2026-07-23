@@ -124,6 +124,7 @@ target_link_libraries(tcp_latency_server
 add_library(udp STATIC
         udp/udp_transport.c
         udp/throughput.c
+        udp/latency.c
 )
 
 
@@ -160,5 +161,21 @@ add_executable(udp_throughput_receiver
 )
 
 target_link_libraries(udp_throughput_receiver
+        udp
+)
+
+add_executable(udp_latency_client
+        udp/latency_client.c
+)
+
+target_link_libraries(udp_latency_client
+        udp
+)
+
+add_executable(udp_latency_server
+        udp/latency_server.c
+)
+
+target_link_libraries(udp_latency_server
         udp
 )

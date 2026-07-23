@@ -52,4 +52,7 @@ uint64_t latency_percentile(
         latency_stats *stats,
         double percentile);
 
+void latency_sort(
+        latency_stats *stats);
+
 #endif //DPDK_RP1_TESTS_STATS_H

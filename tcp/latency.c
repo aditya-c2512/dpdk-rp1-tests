@@ -13,39 +13,6 @@
 #include <string.h>
 #include <inttypes.h>
 
-static int compare_uint64(
-        const void *a,
-        const void *b)
-{
-    uint64_t x = *(uint64_t *)a;
-    uint64_t y = *(uint64_t *)b;
-
-
-    if(x < y)
-        return -1;
-
-    if(x > y)
-        return 1;
-
-    return 0;
-}
-
-
-
-void latency_sort(
-        latency_stats *stats)
-{
-    qsort(
-        stats->samples_ns,
-        stats->samples,
-        sizeof(uint64_t),
-        compare_uint64);
-}
-
-
-
-
-
 int run_latency_client(
         int fd,
         uint64_t samples,
