@@ -179,3 +179,35 @@ add_executable(udp_latency_server
 target_link_libraries(udp_latency_server
         udp
 )
+
+find_package(PkgConfig REQUIRED)
+
+pkg_check_modules(DPDK REQUIRED libdpdk)
+
+
+add_library(dpdk_transport STATIC
+        dpdk/dpdk_transport.c
+)
+
+
+target_include_directories(dpdk_transport
+        PUBLIC
+        ${PROJECT_SOURCE_DIR}/include
+        ${DPDK_INCLUDE_DIRS}
+)
+
+
+target_link_libraries(dpdk_transport
+        ${DPDK_LIBRARIES}
+        common
+)
+
+
+add_executable(dpdk_test_init
+        dpdk/test_init.c
+)
+
+
+target_link_libraries(dpdk_test_init
+        dpdk_transport
+)
