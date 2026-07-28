@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 #include <sys/types.h>
-#include <sys/_types/_socklen_t.h>
+#include <sys/types/socklen_t.h>
 
 int udp_client_connect(
     const char *ip,
