@@ -31,15 +31,15 @@ ssize_t udp_recv_from(
         int fd,
         void *buf,
         size_t len,
-        struct sockaddr_in *peer,
-        socklen_t *peer_len);
+        struct sockaddr_storage *addr,
+        socklen_t *addrlen);
 
 ssize_t udp_send_to(
         int fd,
         const void *buf,
         size_t len,
-        const struct sockaddr_in *peer,
-        socklen_t peer_len);
+        const struct sockaddr *addr,
+        socklen_t addrlen);
 
 
 void udp_close(
