@@ -133,6 +133,55 @@ ssize_t udp_recv(
     return ret;
 }
 
+ssize_t udp_recv_from(
+        int fd,
+        void *buf,
+        size_t len,
+        struct sockaddr_in *peer,
+        socklen_t *peer_len)
+{
+    ssize_t ret =
+        recvfrom(
+            fd,
+            buf,
+            len,
+            0,
+            (struct sockaddr *)peer,
+            peer_len);
+
+    if(ret < 0)
+        log_error("recvfrom()");
+
+    return ret;
+}
+
+ssize_t udp_send_to(
+        int fd,
+        const void *buf,
+        size_t len,
+        const struct sockaddr_in *peer,
+        socklen_t peer_len)
+{
+    ssize_t ret =
+        sendto(
+            fd,
+            buf,
+            len,
+            0,
+            (const struct sockaddr *)peer,
+            peer_len);
+
+    if(ret < 0)
+    {
+        log_error(
+            "sendto failed errno=%d (%s)",
+            errno,
+            strerror(errno));
+    }
+
+    return ret;
+}
+
 void udp_close(
         int fd)
 {

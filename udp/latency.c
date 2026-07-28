@@ -5,6 +5,8 @@
 
 #include <inttypes.h>
 #include <stdlib.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 #include "logging.h"
 #include "timer.h"
@@ -84,12 +86,20 @@ int run_udp_latency_server(
 {
     char buffer[2048];
 
-    while(1)
+    struct sockaddr_storage client_addr;
+    socklen_t client_len;
+
+    while (1)
     {
+        client_len = sizeof(client_addr);
+
         ssize_t len =
-            udp_recv(fd,
-                     buffer,
-                     sizeof(buffer));
+            udp_recv_from(
+                fd,
+                buffer,
+                sizeof(buffer),
+                &client_addr,
+                &client_len);
 
         if(len <= 0)
             continue;
@@ -100,9 +110,15 @@ int run_udp_latency_server(
         if(hdr->magic != LATENCY_MAGIC)
             continue;
 
-        udp_send(fd,
-                 buffer,
-                 len);
+        if(udp_send_to(
+                fd,
+                buffer,
+                len,
+                (struct sockaddr *)&client_addr,
+                client_len) != len)
+        {
+            log_error("Failed to send reply");
+        }
     }
 
     return 0;
