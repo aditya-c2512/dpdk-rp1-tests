@@ -6,8 +6,9 @@
 #define DPDK_RP1_TESTS_UDP_TRANSPORT_H
 
 #include <stdint.h>
+#include <stddef.h>
 #include <sys/types.h>
-#include <sys/types/socklen_t.h>
+#include <sys/socket.h>
 
 int udp_client_connect(
     const char *ip,

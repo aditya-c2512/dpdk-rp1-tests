@@ -9,8 +9,10 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <string.h>
-#include <sys/socket.h>
 #include <unistd.h>
+
+#include <sys/types.h>
+#include <sys/socket.h>
 
 int udp_client_connect(
         const char *ip,
